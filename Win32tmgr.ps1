@@ -1,76 +1,58 @@
-﻿
 <#
-[Program Information]
-Name   : Win32 Task Manager
-Date   : 2019-02-18
-Author : kdr(김경민)
+김경민kdr - CUI 작업관리자
 #>
 
-$ScriptName = "Win32tmgr"
+$ScriptName = "tmgr"
 $SUCCESS = "SUCCESS"
 $FAILED = "FAILED"
 $Startup = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
 
 $ErrorActionPreference = "Stop"
 
-function SFWrite([string]$STATUS, [string]$CSTRING) 
+$currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
+$isAdmin = $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+
+if ($isAdmin -eq $true) { <# Pass #> }
+else { Write-Output "`nIf you are not an administrator, you may have restrictions on your use." }
+
+function SFWrite([string]$STATUS, [string]$CSTRING)
 {
     if($STATUS -eq $SUCCESS)
     {
-        Write-Host "`n[+] " -ForegroundColor Blue -NoNewline
-        Write-Host "$CSTRING `n" -ForegroundColor Yellow
+        Write-Output "`n[+] $CSTRING `n"
     }
 
     if($STATUS -eq $FAILED)
     {
-        Write-Host "`n[-] " -ForegroundColor Red -NoNewline
-        Write-Host "$CSTRING `n" -ForegroundColor Yellow
+        Write-Output "`n[-] $CSTRING `n"
     }
 }
 
-function OPTWrite([string]$CSTRING) 
-{
-    Write-Host "$CSTRING" -ForegroundColor Cyan
-}
-
-function Cwrite([string]$CSTRING, [string]$COLOR)
-{
-    Write-Host "$CSTRING" -ForegroundColor $COLOR -NoNewline
-}
-
-Write-Output "
-     _ _ _  _       ___  ___      
-    | | | ||_| ___ |_  ||_  |                   
-    | | | || ||   ||_  ||  _|     
-    |_____||_||_|_||___||___|     
-    _____  _____  _____  _____    
-   |_   _||     ||   __|| __  |   
-     | |  | | | ||  |  ||    -|   
-     |_|  |_|_|_||_____||__|__|  
-        Win32 Task Manager   `n`n" 
-
-
+Write-Output "`n +---------------------------+"
+Write-Output " |        Made by kdr        |  "
+Write-Output " |      CUI Task Manager     |  "
+Write-Output " +---------------------------+`n"
 
 if($args[0] -eq "--help")
 {
-    OPTWrite " Usage : $ScriptName [Option] `n"
-    OPTWrite "  -proc : Processes             "
-    OPTWrite "  -perf : Performance           "
-    OPTWrite "  -apps : App History           "
-    OPTWrite "  -stup : Startup               "
-    OPTWrite "  -usrs : Users                 "
-    OPTWrite "  -dets : Details               "
-    OPTWrite "  -srvs : Services            `n"
+    Write-Output " Usage : $ScriptName [Option] `n"
+    Write-Output "  -proc : Processes             "
+    Write-Output "  -perf : Performance           "
+    Write-Output "  -apps : App History           "
+    Write-Output "  -stup : Startup               "
+    Write-Output "  -usrs : Users                 "
+    Write-Output "  -dets : Details               "
+    Write-Output "  -srvs : Services            `n"
 }
 
 elseif($args[0] -eq "-proc")
 {
     if($args[1] -eq "--help")
     {
-        OPTWrite " Usage : $ScriptName -proc [Option]                                    `n"
-        OPTWrite "  -show  [ -apps | -srvs | -all ]                 : Show Processes List  "
-        OPTWrite "  -start [ -admin ] [ Process ]                   : Start Process        "
-        OPTWrite "  -kill  [ -pid ProcessID | -pname ProcessName ]  : Kill Process       `n"
+        Write-Output " Usage : $ScriptName -proc [Option]                                    `n"
+        Write-Output "  -show  [ -apps | -srvs | -all ]                 : Show Processes List  "
+        Write-Output "  -start [ -admin ] [ Process ]                   : Start Process        "
+        Write-Output "  -kill  [ -pid ProcessID | -pname ProcessName ]  : Kill Process       `n"
     }
 
     elseif($args[1] -eq "-show")
@@ -78,29 +60,29 @@ elseif($args[0] -eq "-proc")
 
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -proc -show [Option]  `n"
-            OPTWrite "  -apps : Show Applications Process          "
-            OPTWrite "  -srvs : Show Services Process              "
-            OPTWrite "  -all  : Show All Process                 `n"
+            Write-Output " Usage : $ScriptName -proc -show [Option]  `n"
+            Write-Output "  -apps : Show Applications Process          "
+            Write-Output "  -srvs : Show Services Process              "
+            Write-Output "  -all  : Show All Process                 `n"
         }
 
         elseif($args[2] -eq "-apps")
         {
-            Cwrite` "[Applications Process]" Red
+            Write-Output "[Applications Process]"
             Get-Process
         }
 
         elseif($args[2] -eq "-srvs")
         {
-            Cwrite "[Services Process]" Red
+            Write-Output "[Services Process]"
             Get-Service
         }
 
         elseif($args[2] -eq "-all")
         {
-            Cwrite "`n[Applications Process]" Red
+            Write-Output "`n[Applications Process]"
             Get-Process
-            Cwrite "`n[Services Process]" Red
+            Write-Output "`n[Services Process]"
             Get-Service
         }
 
@@ -115,16 +97,16 @@ elseif($args[0] -eq "-proc")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -proc -start [Option] [ Process ]         `n"
-            OPTWrite "  -admin : Start Process as Administrator                        "
-            OPTWrite "   If you don't use -admin Option, Process will start with User`n"
+            Write-Output " Usage : $ScriptName -proc -start [Option] [ Process ]         `n"
+            Write-Output "  -admin : Start Process as Administrator                        "
+            Write-Output "   If you don't use -admin Option, Process will start with User`n"
         }
 
         elseif($args[2] -eq "-admin")
         {
             if($args[3] -eq "--help")
             {
-                OPTWrite " Usage : $ScriptName -proc -start -admin [ Process ]`n"
+                Write-Output " Usage : $ScriptName -proc -start -admin [ Process ]`n"
             }
 
             elseif($null -ne $args[3])
@@ -173,16 +155,16 @@ elseif($args[0] -eq "-proc")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -proc -kill [Option]               `n"
-            OPTWrite "  -pid [ ProcessID ]     : Kill Process with ProcessID    "
-            OPTWrite "  -pname [ ProcessName ] : Kill Process with ProcessName`n"
+            Write-Output " Usage : $ScriptName -proc -kill [Option]               `n"
+            Write-Output "  -pid [ ProcessID ]     : Kill Process with ProcessID    "
+            Write-Output "  -pname [ ProcessName ] : Kill Process with ProcessName`n"
         }
 
         elseif($args[2] -eq "-pid")
         {
             if($args[3] -eq "--help")
             {
-                OPTWrite " Usage : $ScriptName -proc -kill -pid [ ProcessID ]`n"
+                Write-Output " Usage : $ScriptName -proc -kill -pid [ ProcessID ]`n"
             }   
 
             elseif($null -ne $args[3])
@@ -208,7 +190,7 @@ elseif($args[0] -eq "-proc")
         {
             if($args[3] -eq "--help")
             {
-                OPTWrite "Usage : $ScriptName -proc -kill -pname [ ProcessName ]`n"
+                Write-Output "Usage : $ScriptName -proc -kill -pname [ ProcessName ]`n"
             }
 
             elseif($null -ne $args[3])
@@ -246,54 +228,54 @@ elseif($args[0] -eq "-perf")
 {
     if($args[1] -eq "--help")
     {
-        OPTWrite " Usage : $ScriptName -perf [Option]`n"
-        OPTWrite "  -cpu  : Show CPU Info, Status      "
-        OPTWrite "  -mem  : Show Memory Info, Status   "
-        OPTWrite "  -disk : Show Disk Info, Status     "
-        OPTWrite "  -net  : Show Network Info, Status  "
-        OPTWrite "  -gpu  : Show GPU Info, Status    `n"
+        Write-Output " Usage : $ScriptName -perf [Option]`n"
+        Write-Output "  -cpu  : Show CPU Info, Status      "
+        Write-Output "  -mem  : Show Memory Info, Status   "
+        Write-Output "  -disk : Show Disk Info, Status     "
+        Write-Output "  -net  : Show Network Info, Status  "
+        Write-Output "  -gpu  : Show GPU Info, Status    `n"
     }
 
     elseif($args[1] -eq "-cpu")
     {
-        Cwrite "[CPU Information]" Red
+        Write-Output "[CPU Information]" 
         Get-WmiObject -Class Win32_Processor
-        Cwrite "[CPU Percentaeg]" Red
+        Write-Output "[CPU Percentaeg]" 
         Get-WmiObject Win32_Processor | 
         Select-Object LoadPercentage
     }
 
     elseif($args[1] -eq "-mem")
     {
-        Cwrite "`n[Memory Information]"
+        Write-Output "`n[Memory Information]"
         Get-WmiObject -Class win32_physicalmemory | 
         Format-Table Manufacturer,Banklabel,Configuredclockspeed,
         Devicelocator,Capacity,Serialnumber -autosize
         
-        Cwrite "`n[Total Physical Memory (GB)]" Red
+        Write-Output "`n[Total Physical Memory (GB)]" 
         Get-CimInstance -Class Win32_ComputerSystem |
         ForEach-Object {$_.TotalPhysicalMemory / 1GB}
 
-        Cwrite "`n[Free Physical Memory (GB)]" Red
+        Write-Output "`n[Free Physical Memory (GB)]" 
         Get-WmiObject -Class Win32_OperatingSystem |
         ForEach-Object {$_.FreePhysicalMemory / 1MB}
     }
 
     elseif($args[1] -eq "-disk")
     {
-        Cwrite "`n[Disk Information]" Red
+        Write-Output "`n[Disk Information]" 
         Get-WmiObject -Class Win32_LogicalDisk | 
         Select-Object -Property DeviceID, DriveType, VolumeName, 
         @{L='FreeSpace(GB)';E={"{0:N2}" -f ($_.FreeSpace / 1GB)}},
         @{L="TotalDiskSpace(GB)";E={"{0:N2}" -f ($_.Size/ 1GB)}}
 
-        Cwrite "[Disk Percentage]`n" Red 
+        Write-Output "[Disk Percentage]`n"  
         (Get-Counter -Counter "\physicaldisk(_total)\% disk time").CounterSamples.CookedValue
     }
 
     elseif($args[1] -eq "-net")
     {
-        Cwrite "[Network Information]" Red
+        Write-Output "[Network Information]" 
         Get-WmiObject -Class Win32_NetworkAdapter |
         Where-Object {($_.Speed -ne $null) -and ($_.MACAddress -ne $null)} |
         Format-Table -Property SystemName, Name, NetConnectionID, Speed
@@ -301,7 +283,7 @@ elseif($args[0] -eq "-perf")
 
     elseif($args[1] -eq "-gpu")
     {
-        Cwrite "[GPU Information]" Red
+        Write-Output "[GPU Information]" 
         Get-WmiObject -Class Win32_VideoController |
         Format-Table -Property Name
     }
@@ -314,10 +296,10 @@ elseif($args[0] -eq "-perf")
 
 elseif($args[0] -eq "-apps")
 {
-    Cwrite "[ CPU Time ]`n" Red
+    Write-Output "[ CPU Time ]`n" 
     Get-Counter '\Processor(*)\% Processor Time'
 
-    Cwrite "[ All Network ]`n" Red
+    Write-Output "[ All Network ]`n" 
     Get-NetAdapterStatistics
 }
 
@@ -325,10 +307,10 @@ elseif($args[0] -eq "-stup")
 {
     if($args[1] -eq "--help")
     {
-        OPTWrite " Usage : $ScriptName -stup [Option]      `n"
-        OPTWrite "  -show          : Show Startup Program    "
-        OPTWrite "  -add  [ Path ] : Add Startup Program     "
-        OPTWrite "  -del  [ Path ] : Delete Startup Program`n"
+        Write-Output " Usage : $ScriptName -stup [Option]      `n"
+        Write-Output "  -show          : Show Startup Program    "
+        Write-Output "  -add  [ Path ] : Add Startup Program     "
+        Write-Output "  -del  [ Path ] : Delete Startup Program`n"
     }
 
     elseif($args[1] -eq "-show")
@@ -340,7 +322,7 @@ elseif($args[0] -eq "-stup")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -stup -add [ Path ]`n"
+            Write-Output " Usage : $ScriptName -stup -add [ Path ]`n"
         }
 
         elseif($null -ne $args[2])
@@ -366,7 +348,7 @@ elseif($args[0] -eq "-stup")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -stup -del [ Path ]"
+            Write-Output " Usage : $ScriptName -stup -del [ Path ]"
         }
 
         elseif($null -ne $args[2])
@@ -398,15 +380,15 @@ elseif($args[0] -eq '-usrs')
 {
     if($args[1] -eq "--help")
     {
-        OPTWrite " Usage : $ScriptName -usrs [Option]           `n"
-        OPTWrite "  -show            : Show Logged on User        "
-        OPTWrite "  -en  [ Account ] : Enable User                "
-        OPTWrite "  -dis [ Account ] : Disable User             `n"
+        Write-Output " Usage : $ScriptName -usrs [Option]           `n"
+        Write-Output "  -show            : Show Logged on User        "
+        Write-Output "  -en  [ Account ] : Enable User                "
+        Write-Output "  -dis [ Account ] : Disable User             `n"
     }
 
     elseif($args[1] -eq "-show")
     {
-        Cwrite "[ User List ]`n" Red
+        Write-Output "[ User List ]`n" 
         Get-LocalUser | Select-Object Name, Enabled
     }
 
@@ -414,8 +396,8 @@ elseif($args[0] -eq '-usrs')
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -usrs -en [Option] `n"
-            OPTWrite "  -en [ Account ]                       `n"
+            Write-Output " Usage : $ScriptName -usrs -en [Option] `n"
+            Write-Output "  -en [ Account ]                       `n"
         }
 
         elseif($null -ne $args[2])
@@ -447,8 +429,8 @@ elseif($args[0] -eq '-usrs')
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -usrs -dis [Option] `n"
-            OPTWrite "  -dis [ Account ]                       `n"
+            Write-Output " Usage : $ScriptName -usrs -dis [Option] `n"
+            Write-Output "  -dis [ Account ]                       `n"
         }
 
         elseif($null -ne $args[2])
@@ -492,21 +474,21 @@ elseif($args[0] -eq "-srvs")
 {
     if($args[1] -eq "--help")
     {
-        OPTWrite " Usage : $ScriptName -srvs [Option]                          `n"
-        OPTWrite "  -show    [ -running | -stopped | -all ]  : Show Services     "
-        OPTWrite "  -start   [ Service ]                     : Start Service     "
-        OPTWrite "  -stop    [ Service ]                     : Stop Service      "
-        OPTWrite "  -restart [ Service ]                     : Restart Service `n" 
+        Write-Output " Usage : $ScriptName -srvs [Option]                          `n"
+        Write-Output "  -show    [ -running | -stopped | -all ]  : Show Services     "
+        Write-Output "  -start   [ Service ]                     : Start Service     "
+        Write-Output "  -stop    [ Service ]                     : Stop Service      "
+        Write-Output "  -restart [ Service ]                     : Restart Service `n" 
     }
 
     elseif($args[1] -eq "-show")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -srvs [Option] `n"
-            OPTWrite "  -running : Show Running Services    "
-            OPTWrite "  -stopped : Show Stopped Services    " 
-            OPTWrite "  -all     : Show All Services      `n"
+            Write-Output " Usage : $ScriptName -srvs [Option] `n"
+            Write-Output "  -running : Show Running Services    "
+            Write-Output "  -stopped : Show Stopped Services    " 
+            Write-Output "  -all     : Show All Services      `n"
         }
 
         elseif($args[2] -eq "-running")
@@ -537,7 +519,7 @@ elseif($args[0] -eq "-srvs")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -srvs -start [ Service ]`n"
+            Write-Output " Usage : $ScriptName -srvs -start [ Service ]`n"
         }
 
         elseif($null -ne $args[2])
@@ -563,7 +545,7 @@ elseif($args[0] -eq "-srvs")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -srvs -stop [ Service ]`n"
+            Write-Output " Usage : $ScriptName -srvs -stop [ Service ]`n"
         }
 
         elseif($null -ne $args[2])
@@ -589,7 +571,7 @@ elseif($args[0] -eq "-srvs")
     {
         if($args[2] -eq "--help")
         {
-            OPTWrite " Usage : $ScriptName -srvs -restart [ Service ]"
+            Write-Output " Usage : $ScriptName -srvs -restart [ Service ]"
             
         }
 
